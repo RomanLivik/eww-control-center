@@ -1,0 +1,112 @@
+;; ============================================================
+;;  Control Center — eww.yuck
+;; ============================================================
+
+(defpoll volume :interval "1s"
+  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf \"%d\", $2*100}'")
+
+(defpoll brightness :interval "1s"
+  "brightnessctl g | awk -v max=$(brightnessctl m) '{printf \"%d\", ($1/max)*100}'")
+
+(defpoll playing-title :interval "2s"
+  "playerctl metadata title 2>/dev/null || echo 'No Media'")
+
+(defpoll playing-artist :interval "2s"
+  "playerctl metadata artist 2>/dev/null || echo 'Station'")
+
+(defpoll playing-status :interval "1s"
+  "playerctl status 2>/dev/null || echo 'Stopped'")
+
+(defpoll notif-paused :interval "1s"
+  "dunstctl is-paused")
+
+;; WINDOW
+(defwindow control-center
+  :monitor 0
+  :geometry (geometry
+    :x "20px"
+    :y "20px"
+    :width "380px"
+    :height "600px"
+    :anchor "top right")
+  :stacking "overlay"
+  (cc-body))
+
+;; WIDGETS
+(defwidget round-btn [icon tip cmd]
+  (button
+    :class "round-btn"
+    :tooltip tip
+    :onclick cmd
+    (label :class "round-btn-icon" :text icon)))
+
+(defwidget card-toggles []
+  (box
+    :class "cc-card"
+    :orientation "v"
+    :spacing 15
+    (box :orientation "h" :spacing 15
+      (round-btn :icon "󰀝" :tip "Airplane Mode" :cmd "nmcli radio wifi off")
+      (round-btn :icon "󰜶" :tip "LocalSend" :cmd "localsend &"))
+    (box :orientation "h" :spacing 15
+      (round-btn :icon "󰤨" :tip "WiFi Settings" :cmd "nmcli device wifi rescan")
+      (round-btn :icon "󰂯" :tip "Bluetooth" :cmd "blueman-manager &"))))
+
+(defwidget card-media []
+  (box
+    :class "cc-card"
+    :orientation "v"
+    :spacing 10
+    (label :class "media-title" :text playing-title :limit-width 20)
+    (label :class "media-artist" :text playing-artist :limit-width 20)
+    (box :orientation "h" :halign "center" :spacing 15
+      (button :class "media-btn" :onclick "playerctl previous" (label :class "media-icon" :text "󰒮"))
+      (button :class "media-btn" :onclick "playerctl play-pause" 
+              (label :class "media-icon" :text {playing-status == "Playing" ? "󰏤" : "󰐊"}))
+      (button :class "media-btn" :onclick "playerctl next" (label :class "media-icon" :text "󰒭")))))
+
+(defwidget card-notif []
+  (button
+    :class {notif-paused == "false" ? "cc-card cc-notif cc-notif-on" : "cc-card cc-notif cc-notif-off"}
+    :onclick "dunstctl set-paused toggle"
+    (box :orientation "h" :halign "center" :spacing 10
+      (label :class "notif-icon" :text {notif-paused == "false" ? "󰂚" : "󰂛"})
+      (label :class "notif-label" :text {notif-paused == "false" ? "DND: OFF" : "DND: ON"}))))
+
+(defwidget card-sliders []
+  (box
+    :class "cc-card"
+    :orientation "v"
+    :spacing 15
+    (box :orientation "h" :spacing 10
+      (label :class "slider-icon" :text "󰕾")
+      (scale :class "cc-slider" :hexpand true :min 0 :max 101 :value volume 
+             :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%"))
+    (box :orientation "h" :spacing 10
+      (label :class "slider-icon" :text "󰃠")
+      (scale :class "cc-slider" :hexpand true :min 0 :max 101 :value brightness 
+             :onchange "brightnessctl s {}%"))))
+
+(defwidget card-apps []
+  (box
+    :class "cc-card"
+    :orientation "v"
+    :spacing 15
+    (box :orientation "h" :spacing 15
+      (button :class "app-btn" :onclick "code &" (label :class "app-icon" :text "󰨞"))
+      (button :class "app-btn" :onclick "telegram-desktop &" (label :class "app-icon" :text "󰙯")))
+    (box :orientation "h" :spacing 15
+      (button :class "app-btn" :onclick "zen-browser &" (label :class "app-icon" :text "󰈹"))
+      (button :class "app-btn" :onclick "foot &" (label :class "app-icon" :text "󰞷")))))
+
+;; BODY
+(defwidget cc-body []
+  (box
+    :class "cc-root"
+    :orientation "v"
+    :space-evenly false
+    :spacing 15
+    (box :spacing 15 (card-toggles) (card-media))
+    (card-notif)
+    (card-sliders)
+    (card-apps)))

@@ -1,0 +1,133 @@
+/* EWW Control Center - Cyberpunk Black & White */
+
+* {
+  all: unset;
+  font-family: "JetBrains Mono", "monospace";
+}
+
+.cc-root {
+  background-color: rgba(0, 0, 0, 0.9);
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.cc-card {
+  background-color: #111111;
+  border: 1px solid #333333;
+  border-radius: 20px;
+  padding: 16px;
+}
+
+/* Buttons */
+.round-btn {
+  min-width: 64px;
+  min-height: 64px;
+  border-radius: 9999px;
+  background-color: #222222;
+  transition: all 200ms ease;
+
+  &:hover {
+    background-color: #ffffff;
+    .round-btn-icon { color: #000000; }
+  }
+
+  &:active {
+    background-color: #888888;
+  }
+}
+
+.round-btn-icon {
+  font-size: 20px;
+  color: #ffffff;
+}
+
+/* Media Player */
+.media-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.media-artist {
+  font-size: 12px;
+  color: #888888;
+}
+
+.media-btn {
+  background-color: transparent;
+  border-radius: 9999px;
+  min-width: 40px;
+  min-height: 40px;
+
+  &:hover { background-color: #333333; }
+}
+
+.media-icon {
+  font-size: 20px;
+  color: #ffffff;
+}
+
+/* Notifications Toggle */
+.cc-notif {
+  min-height: 60px;
+  transition: all 200ms ease;
+}
+
+.cc-notif-on {
+  border: 1px solid #ffffff;
+  background-color: #222222;
+}
+
+.cc-notif-off {
+  background-color: #111111;
+  border: 1px solid #333333;
+}
+
+.notif-icon { font-size: 20px; }
+.notif-label { font-size: 12px; }
+
+/* Sliders */
+.slider-icon {
+  font-size: 18px;
+  color: #ffffff;
+  min-width: 24px;
+}
+
+.cc-slider {
+  trough {
+    background-color: #333333;
+    border-radius: 10px;
+    min-height: 6px;
+  }
+
+  highlight {
+    background-color: #ffffff;
+    border-radius: 10px;
+  }
+
+  slider {
+    background-color: #ffffff;
+    border-radius: 9999px;
+    min-width: 12px;
+    min-height: 12px;
+  }
+}
+
+/* App Buttons */
+.app-btn {
+  min-width: 64px;
+  min-height: 64px;
+  border-radius: 16px;
+  background-color: #222222;
+  border: 1px solid transparent;
+
+  &:hover {
+    border-color: #ffffff;
+    background-color: #000000;
+  }
+}
+
+.app-icon {
+  font-size: 24px;
+  color: #ffffff;
+}
