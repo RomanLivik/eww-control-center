@@ -1,35 +1,32 @@
-
-(defpoll volume :interval "1s"
+(defpoll volume :interval "0.001s"
   "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf \"%d\", $2*100}'")
 
-(defpoll brightness :interval "1s"
+(defpoll brightness :interval "0.001s"
   "brightnessctl g | awk -v max=$(brightnessctl m) '{printf \"%d\", ($1/max)*100}'")
 
-(defpoll playing-title :interval "2s"
+(defpoll playing-title :interval "0.001s"
   "playerctl metadata title 2>/dev/null || echo 'No Media'")
 
-(defpoll playing-artist :interval "2s"
+(defpoll playing-artist :interval "0.001s"
   "playerctl metadata artist 2>/dev/null || echo 'Station'")
 
-(defpoll playing-status :interval "1s"
+(defpoll playing-status :interval "0.001s"
   "playerctl status 2>/dev/null || echo 'Stopped'")
 
-(defpoll notif-paused :interval "1s"
+(defpoll notif-paused :interval "0.001s"
   "dunstctl is-paused")
 
-;; WINDOW
 (defwindow control-center
   :monitor 0
   :geometry (geometry
-    :x "20px"
-    :y "20px"
-    :width "380px"
-    :height "600px"
-    :anchor "top right")
+    :x "-20px"
+    :y "-20px"
+    :width "300px"
+    :height "510px"
+    :anchor "bottom right")
   :stacking "overlay"
   (cc-body))
 
-;; WIDGETS
 (defwidget round-btn [icon tip cmd]
   (button
     :class "round-btn"
@@ -70,40 +67,72 @@
       (label :class "notif-icon" :text {notif-paused == "false" ? "󰂚" : "󰂛"})
       (label :class "notif-label" :text {notif-paused == "false" ? "DND: OFF" : "DND: ON"}))))
 
-(defwidget card-sliders []
+(defwidget card-sliders-brightness []
   (box
-    :class "cc-card"
+    :class "cc-card-sliders"
     :orientation "v"
     :spacing 15
-    (box :orientation "h" :spacing 10
-      (label :class "slider-icon" :text "󰕾")
-      (scale :class "cc-slider" :hexpand true :min 0 :max 101 :value volume 
-             :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}%"))
-    (box :orientation "h" :spacing 10
-      (label :class "slider-icon" :text "󰃠")
-      (scale :class "cc-slider" :hexpand true :min 0 :max 101 :value brightness 
-             :onchange "brightnessctl s {}%"))))
+      (scale :class "cc-slider" :orientation "v" :vexpand true :min 0 :max 101 :value {101 - brightness}
+             :onchange "brightnessctl s $(( 101 - {} ))%")))
 
-(defwidget card-apps []
+(defwidget card-sliders-volume []
   (box
-    :class "cc-card"
+    :class "cc-card-sliders"
     :orientation "v"
     :spacing 15
+      (scale :class "cc-slider" :orientation "v" :vexpand true :min 0 :max 101 :value {101 - volume}
+             :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ $(( 101 - {} ))%")))
+
+(defwidget label-sliders []
+  (box
+    :class ""
+    :orientation "h"
+    :spacing 1
+    (box :orientation "h" :spacing 1
+      (label :class "lbl-spc" :text ""))
+    (box :orientation "v" :spacing 1
+      (label :class "lbl-spc" :text ""))))
+
+
+(defwidget vscodexterm []
+  (box
+    :class ""
+    :orientation "h"
+    :spacing 15
     (box :orientation "h" :spacing 15
-      (button :class "app-btn" :onclick "code &" (label :class "app-icon" :text "󰨞"))
-      (button :class "app-btn" :onclick "telegram-desktop &" (label :class "app-icon" :text "󰙯")))
-    (box :orientation "h" :spacing 15
-      (button :class "app-btn" :onclick "zen-browser &" (label :class "app-icon" :text "󰈹"))
+        (button :class "app-btn" :onclick "code &" (label :class "app-icon" :text "󰨞")))
+    (box :orientation "v" :spacing 15
       (button :class "app-btn" :onclick "foot &" (label :class "app-icon" :text "󰞷")))))
+(defwidget browserxmessanger []
+  (box
+    :class ""
+    :orientation "h"
+    :spacing 15   
+    (box :orientation "h" :spacing 15
+      (button :class "app-btn" :onclick "zen-browser &" (label :class "app-icon" :text "󰈹")))
+      (box :orientation "v" :spacing 15
+        (button :class "app-btn" :onclick "AyuGram &" (label :class "app-icon" :text "󰙯")))))
 
-;; BODY
+(defwidget card-airdrop []
+  (box
+    :class ""
+    :orientation "h"
+    :spacing 15
+    (box :orientation "h" :spacing 15
+      (button :class "app-btn" :onclick "localsend &" (label :class "app-icon" :text "")))))
+
 (defwidget cc-body []
   (box
     :class "cc-root"
-    :orientation "v"
+    :orientation "h"
     :space-evenly false
     :spacing 15
-    (box :spacing 15 (card-toggles) (card-media))
-    (card-notif)
-    (card-sliders)
-    (card-apps)))
+    (box :orientation "v" :space-evenly false :spacing 15
+    (card-toggles) (vscodexterm) (card-notif) (browserxmessanger))
+    (box :orientation "v" :space-evenly false :spacing 15
+      (card-media)
+      (box :orientation "h" :spacing 15 :hexpand true
+        (card-sliders-brightness)
+        (card-sliders-volume))
+      (box :orientation "v" :spacing 15
+        (label-sliders)))))
